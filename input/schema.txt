@@ -1,0 +1,24 @@
+COMPLAINTS
+
+Date received,  Product,                                                Sub-product,        Issue,                                                              Sub-issue,                                                  Consumer complaint narrative,   Company public response,    Company,                                    State,  ZIP code,   Tags,   Consumer consent provided?,     Submitted via,  Date sent to company,   Company response to consumer,   Timely response?,   Consumer disputed?,     Complaint ID
+2024-09-07,     Credit reporting or other personal consumer reports,    Credit reporting,   Problem with a company's investigation into an existing problem,    Their investigation did not fix an error on your report,     ,                               ,                          "TRANSUNION INTERMEDIATE HOLDINGS, INC.",   GA,     30038,       ,       ,                              Web,            2024-09-07,             In progress,                    Yes,                N/A,                    10034043
+
+-------------COMPLAINT_DF-------------
+Date received                   object
+Product                         object
+Sub-product                     object
+Issue                           object
+Sub-issue                       object
+Consumer complaint narrative    object
+Company public response         object
+Company                         object
+State                           object  primary
+ZIP code                        object  remove
+Tags                            object  remove
+Consumer consent provided?      object
+Submitted via                   object
+Date sent to company            object
+Company response to consumer    object
+Timely response?                object
+Consumer disputed?              object
+Complaint ID                     int64
