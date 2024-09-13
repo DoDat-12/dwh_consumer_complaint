@@ -1,9 +1,13 @@
 import pandas as pd
 import numpy as np
+# import psycopg2 as pg
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
 from pandas import json_normalize
+from urllib.parse import quote
+from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 
 # Import Data ----------------------------------------------------------------------------------------------------------
 # connection string
@@ -75,6 +79,9 @@ def complaints(df):
     for column in map_cols:
         df[column].map({'Yes': 1, 'No': 0})
 
+    # convert ObjectId to String
+    df.loc[:, '_id'] = df['_id'].to_string()
+
     return df
 
 
@@ -85,4 +92,28 @@ print(complaint_df.head(10).to_string())
 
 # Transfer to PostgreSQL -----------------------------------------------------------------------------------------------
 
+# postgresql connection parameters
+username = 'postgres'
+password = 'joshuamellody'
+host = 'localhost'
+port = '5432'
+database = 'customer_complaint'
+encoded_password = quote(password)
 
+# connection string
+DATABASE_URI = f'postgresql://{username}:{encoded_password}@{host}:{port}/{database}'
+
+# SQLAlchemy engine
+engine = create_engine(DATABASE_URI, pool_size=10, max_overflow=20)
+
+try:
+    connection = engine.connect()
+    print('Connection established')
+    connection.close()
+except OperationalError as e:
+    print(e)
+
+# create table and import data into the database
+complaint_df.to_sql('complaints', engine, if_exists='replace', index=False)
+
+print('Data transferred successfully')
