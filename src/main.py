@@ -3,11 +3,9 @@ import numpy as np
 
 from pymongo.mongo_client import MongoClient
 from pymongo.server_api import ServerApi
-# from pandas import json_normalize
+from pandas import json_normalize
 
 # Import Data ----------------------------------------------------------------------------------------------------------
-
-# Consumer Complaint Dataset from MongoDB Atlas
 # connection string
 uri = "mongodb+srv://tadod:dodat@tadoddwh01.g43jx.mongodb.net/?retryWrites=true&w=majority&appName=TadodDWH01"
 
@@ -25,11 +23,16 @@ except Exception as e:
 db = client['customer']
 collection = db['complaint']
 
-cursor = collection.find()
-data = list(cursor)
-complaint_df = pd.DataFrame(data)
+projections = {
+    'Tags': 0,
+    'Zip code': 0
+}
+cursor = collection.find({}, projections)
 
-print(complaint_df.dtypes())
+# convert into DataFrame
+data = list(cursor)
+complaint_df = json_normalize(pd.DataFrame(data).to_dict('records'))  # I norm
+# print('DataFrame imported')
 
 # Data Transformation --------------------------------------------------------------------------------------------------
 # complaints
@@ -37,7 +40,6 @@ print(complaint_df.dtypes())
 
 def complaints(df):
     # just need state for query
-    df = df.drop(columns=['Tags', 'ZIP code'])
     df['Date received'] = pd.to_datetime(df['Date received'])
 
     # possible NaN columns
@@ -49,10 +51,12 @@ def complaints(df):
             # get random value from non NaN values in column
             random_values = np.random.choice(df[column].dropna(), num_nan_values)
             df.loc[nan_mask, column] = random_values
+    # print('NaN random filled done')
 
     # condition
     df = df[(df['Date received'] >= '2010-01-01') & (df['Date received'] <= '2020-12-31')]
-    df['Date received'] = pd.to_datetime(df['Date received'])
+    # df['Date received'] = pd.to_datetime(df['Date received']) - SettingWithCopyWarning
+    df.loc[:, 'Date received'] = pd.to_datetime(df.loc[:, 'Date received'])
 
     unique_combinations = df[['Product', 'Sub-product', 'Issue', 'Sub-issue']].drop_duplicates()
 
@@ -64,14 +68,21 @@ def complaints(df):
                 unique_values = unique_combinations[column].values  # list of unique values
                 if len(unique_values) > 0:
                     df.at[index, column] = np.random.choice(unique_values)
+    # print('NaN missing filled done')
 
     # convert boolean column
     map_cols = ['Timely response?', 'Consumer disputed?']
     for column in map_cols:
-        df[column] = pd[column].map({'Yes': 1, 'No': 0})
+        df[column].map({'Yes': 1, 'No': 0})
 
     return df
 
 
 # Final complaint
 complaint_df = complaints(complaint_df)
+
+print(complaint_df.head(10).to_string())
+
+# Transfer to PostgreSQL -----------------------------------------------------------------------------------------------
+
+
