@@ -94,7 +94,7 @@ print(complaint_df.head(10).to_string())
 
 # postgresql connection parameters
 username = 'postgres'
-password = 'joshuamellody'
+password = ''  # blah blah
 host = 'localhost'
 port = '5432'
 database = 'customer_complaint'
